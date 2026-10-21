@@ -43,6 +43,10 @@ calendar from `weather.ts`, so the data and the model always agree on which week
 
 ## Demand
 
+- **Baseline:** a committed, **hypothetical** curve of expected units per season week
+  (`src/app/model/baseline.ts`). It rises from 15 units in early March, holds at 100 through
+  June and early July, and tapers to 15 by late October. The scale is a round number chosen for
+  readability, not taken from real orders.
 - **Factor:** `max(0, 1 + sensitivity × anomaly)`. Sensitivity is the fractional change in
   demand per standard deviation of anomaly. The clamp keeps demand and forecasts from going
   negative.

@@ -13,6 +13,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Real weather: weekly mean daily highs at Omaha Eppley Airfield for the 2010–2025 seasons,
   from NOAA GHCN-Daily. `pnpm data:noaa` regenerates the file and refuses to write one with
   a missing week.
+- The simulator page. Pick 2012, 2015 or 2024 and set lead time, minimum order, starting
+  stock, unit cost and both sensitivities. The page compares the normal and weather-adjusted
+  plans in a season-totals table and a week-by-week cash table, and ends on "Would this change
+  your order?". The page states that the weather is real and the sales are hypothetical, and
+  the default season's results are already in the prerendered HTML.
+- Playwright tests for the page: happy paths, the unit-cost error state, edge cases (assumed
+  sensitivity 0, extreme sensitivities, longest lead time), phone width, and no JavaScript.
 - Unit-test coverage is enforced in CI: 80% for app code, and 95% lines and 90% branches for
   the model. `pnpm test:coverage` writes an HTML report to `coverage/`.
 
