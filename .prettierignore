@@ -1,0 +1,9 @@
+# Generated or vendored: formatting these would only churn diffs.
+pnpm-lock.yaml
+dist
+.angular
+node_modules
+test-results
+playwright-report
+.firebase
+.claude

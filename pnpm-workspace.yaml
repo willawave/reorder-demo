@@ -1,0 +1,9 @@
+# Dependencies allowed to run install scripts. pnpm 11 refuses any other in CI
+# (ERR_PNPM_IGNORED_BUILDS). All four are native or binary toolchain pieces of
+# the Angular build: esbuild, the build cache (lmdb, msgpackr-extract) and the
+# file watcher.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
