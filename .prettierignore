@@ -10,3 +10,4 @@ playwright-report
 
 # Written by scripts/noaa-to-json.mjs, one line per year on purpose.
 src/app/data/*.json
+.gstack

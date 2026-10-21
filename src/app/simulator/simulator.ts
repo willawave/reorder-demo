@@ -1,6 +1,10 @@
-import { Component, linkedSignal, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { form } from '@angular/forms/signals';
+import { SiteFooter } from '../chrome/site-footer';
+import { SiteHeader } from '../chrome/site-header';
 import weather from '../data/omaha-tmax.json';
+import { Seo } from '../seo/seo';
+import { BOOKING_URL } from '../site';
 import { BASELINE } from '../model/baseline';
 import { SimResult, simulate } from '../model/reorder';
 import { anomalies, seasonMondays } from '../model/weather';
@@ -24,10 +28,24 @@ const sensitivityFormat = (value: number): string =>
  */
 @Component({
   selector: 'app-simulator',
-  imports: [CashTable, PlanComparison, SeasonPicker, Slider],
+  imports: [CashTable, PlanComparison, SeasonPicker, SiteFooter, SiteHeader, Slider],
   templateUrl: './simulator.html',
 })
 export class Simulator {
+  constructor() {
+    // In the constructor, not a lifecycle hook: it must run during prerender so
+    // the tags are in the static HTML a link-preview scraper reads.
+    inject(Seo).apply({
+      title: 'Weather-adjusted reorder demo · WillaWave',
+      description:
+        'Replay a real Omaha flea and tick season and see when weather-adjusted ordering ' +
+        'beats the usual curve. Real NOAA weather, hypothetical sales.',
+      path: '/',
+      index: true,
+    });
+  }
+
+  protected readonly bookingUrl = BOOKING_URL;
   protected readonly seasons = SEASONS;
   protected readonly limits = LIMITS;
   protected readonly season = signal(DEFAULT_SEASON);
