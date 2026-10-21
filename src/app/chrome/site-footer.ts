@@ -9,7 +9,9 @@ import { Component } from '@angular/core';
         <a
           class="inline-flex min-h-11 items-center"
           href="https://github.com/willawave/reorder-demo"
-          >Source on GitHub</a
+          target="_blank"
+          rel="noopener"
+          >Source on GitHub<span class="sr-only"> (opens in a new tab)</span></a
         >
       </div>
     </footer>
