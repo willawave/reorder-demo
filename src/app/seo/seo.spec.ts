@@ -43,7 +43,7 @@ describe('Seo', () => {
     // tag. A relative canonical is ignored the same way. This is the assertion
     // that keeps the OG card working.
     expect(content('property="og:image"')).toBe(
-      'https://reorder-demo.willawave.ai/brand/og-1200x630.png',
+      'https://reorder-demo.willawave.ai/og-1200x630.png',
     );
     expect(content('property="og:url"')).toBe('https://reorder-demo.willawave.ai/');
     expect(canonical()).toBe('https://reorder-demo.willawave.ai/');
@@ -54,7 +54,8 @@ describe('Seo', () => {
 
     expect(content('property="og:image:width"')).toBe('1200');
     expect(content('property="og:image:height"')).toBe('630');
-    expect(content('property="og:image:alt"')).toContain('WillaWave');
+    // The card's chart shows sales, so its description must say they're hypothetical.
+    expect(content('property="og:image:alt"')).toContain('hypothetical');
     expect(content('name="twitter:card"')).toBe('summary_large_image');
   });
 

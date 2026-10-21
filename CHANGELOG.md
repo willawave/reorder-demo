@@ -3,6 +3,14 @@
 All notable changes to the reorder demo are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- A demo-specific link-preview card: the page's question beside a chart of the usual season
+  against 2012's hypothetical demand, computed from the model. Its source is
+  `brand/og-card.html`; the page used WillaWave's generic card before.
+
 ## [0.2.1.0] - 2026-10-21
 
 ### Changed

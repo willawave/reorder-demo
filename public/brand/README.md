@@ -3,6 +3,10 @@
 Copied 2026-10-21 from `willawave-ai/projects/web/public/brand/`. **willawave-ai is the source of
 truth:** change a file there first, then copy it here. Don't edit these copies on their own.
 
+This is a subset, not a full mirror: everything here is deployed, so files the demo doesn't use
+are left out. WillaWave's `og-1200x630.png` and `favicon.ico` were removed on 2026-10-21. The demo
+has its own card at `/og-1200x630.png`, and its `.ico` lives at the public root.
+
 Don't extract a shared library yet. willawave-ai's brand README sets the trigger at a third
 consumer, and this demo is the second.
 
@@ -17,7 +21,6 @@ They're kept as-is so both repos match. The header pairs `wordmark.svg` with liv
 ## In use
 
 - `favicon.svg`, `apple-touch-icon.png`: linked from `src/index.html`. `/favicon.ico` at the
-  public root is the brand `.ico` too, for crawlers that probe it blindly.
+  public root is the brand `.ico`, for crawlers that probe it blindly.
 - `wordmark.svg`, `wordmark-dark.svg`: the header mark. CSS shows one per theme.
-- `og-1200x630.png`: the Open Graph card. It's WillaWave's own card until the demo has one.
 - `icon-192.png`, `icon-512.png`: copied for completeness; no manifest links them yet.
