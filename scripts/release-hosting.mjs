@@ -17,10 +17,12 @@ import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { SITE_ORIGIN } from '../src/app/site.ts';
 import { PROJECT, SITE_ID, checkHostingSite } from './hosting-site.mjs';
 
-// The web.app URL until the custom domain's DNS and certificate are live.
-const SITE = `https://${SITE_ID}.web.app`;
+// The canonical domain visitors use (DNS and certificate live since 2026-10-21).
+// It serves the same Hosting site as ${SITE_ID}.web.app.
+const SITE = SITE_ORIGIN;
 const BUILT = 'dist/reorder-demo/browser';
 // What must match byte for byte: the page and the stamp.
 const LIVE_FILES = [
