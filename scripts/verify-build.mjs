@@ -144,7 +144,7 @@ check(
   );
   check(
     'landing HTML carries an absolute og:image and canonical',
-    html.includes(`content="${SITE_ORIGIN}/brand/og-1200x630.png"`) &&
+    html.includes(`content="${SITE_ORIGIN}/og-1200x630.png"`) &&
       html.includes(`<link rel="canonical" href="${SITE_ORIGIN}/"`),
     `og:image or canonical is missing, or not absolute on ${SITE_ORIGIN}`,
   );
@@ -182,7 +182,7 @@ check(
     'brand/apple-touch-icon.png',
     'brand/wordmark.svg',
     'brand/wordmark-dark.svg',
-    'brand/og-1200x630.png',
+    'og-1200x630.png',
     'robots.txt',
     'sitemap.xml',
   ];

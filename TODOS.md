@@ -18,9 +18,9 @@
       `og:image` and the sitemap all point there. Until the records and the certificate are
       live, a shared link's preview image and the canonical URL don't resolve. Add the records
       Firebase shows when the custom domain is added to the `reorder-demo` Hosting site.
-- [ ] **A demo-specific Open Graph card before the 11/09 article.** The page currently reuses
-      WillaWave's `og-1200x630.png`. A card showing the demo itself would make the LinkedIn
-      preview more specific.
+- [x] **A demo-specific Open Graph card before the 11/09 article.** `public/og-1200x630.png`,
+      rendered from `brand/og-card.html`. After DNS is live, run LinkedIn Post Inspector on the
+      URL once so LinkedIn fetches it.
 - [ ] **Radio buttons render as 44px circles.** The global touch-target rule in `styles.css`
       sizes them. The label is already the large click target, so the circle could shrink
       to normal size. This needs a decision on how the target-size test treats a radio inside
