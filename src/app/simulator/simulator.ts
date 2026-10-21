@@ -16,8 +16,12 @@ import { DEFAULT_SETTINGS, LIMITS, Settings, settingsSchema } from './settings';
 import { Slider } from './slider';
 import { formatDollars } from './summary';
 
-const sensitivityFormat = (value: number): string =>
-  `${value > 0 ? '+' : ''}${value.toFixed(2)} per SD`;
+/** A weather effect as the percent change in sales, with a true minus sign. */
+const sensitivityFormat = (value: number): string => {
+  const percent = Math.round(value * 100);
+  if (percent === 0) return '0%';
+  return `${percent > 0 ? '+' : '−'}${Math.abs(percent)}%`;
+};
 
 /*
  * The demo page: one season of real Omaha weather replayed against two

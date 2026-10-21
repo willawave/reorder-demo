@@ -70,7 +70,7 @@ describe('Simulator', () => {
     const { set, cells, text } = await render();
     expect(cells(1)).not.toEqual(cells(0));
     await set('assumed-sensitivity', '0');
-    expect(text('output[for="assumed-sensitivity"]')).toBe('0.00 per SD');
+    expect(text('output[for="assumed-sensitivity"]')).toBe('0%');
     expect(cells(1)).toEqual(cells(0));
     expect(text('app-plan-comparison p')).toContain('the same cash');
   });
@@ -82,6 +82,20 @@ describe('Simulator', () => {
     expect(output.textContent?.trim()).toBe('4 weeks');
     expect(el.querySelector('#lead-time')!.getAttribute('aria-valuetext')).toBe('4 weeks');
   });
+
+  const effectCases: [value: string, shown: string][] = [
+    ['0.3', '+30%'],
+    ['-0.2', '−20%'],
+    ['0.05', '+5%'],
+  ];
+  for (const [value, shown] of effectCases) {
+    it(`should show a weather effect of ${value} as ${shown}`, async () => {
+      const { el, set, text } = await render();
+      await set('true-sensitivity', value);
+      expect(text('output[for="true-sensitivity"]')).toBe(shown);
+      expect(el.querySelector('#true-sensitivity')!.getAttribute('aria-valuetext')).toBe(shown);
+    });
+  }
 
   it('should label every slider and give it an output', async () => {
     const { el } = await render();

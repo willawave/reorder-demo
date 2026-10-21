@@ -6,7 +6,7 @@ import { Field } from '@angular/forms/signals';
  *
  * Native, so keyboard (arrows, Home/End, Page Up/Down) and screen-reader
  * behaviour come from the browser. aria-valuetext announces the formatted
- * value ("2 weeks", "+0.30 per SD") instead of the bare number.
+ * value ("2 weeks", "+30%") instead of the bare number.
  *
  * Bound by hand to the Signal Forms field rather than with [formField]: the
  * directive sets the value only as a DOM property, so the prerendered HTML has

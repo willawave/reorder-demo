@@ -74,25 +74,38 @@
           </p>
         }
       </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-6" aria-labelledby="weather-effect-title">
+    <div class="flex max-w-measure flex-col gap-2">
+      <h2 id="weather-effect-title" class="text-xl font-semibold">How much weather moves sales</h2>
+      <p>
+        Two numbers. The first is how much weather actually moves sales of this made-up product. The
+        second is how much the buyer believes it does. The closer the guess, the better the
+        weather-adjusted plan does.
+      </p>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2">
       <app-slider
         controlId="true-sensitivity"
-        label="How demand really responds to weather"
+        label="Actual effect on sales"
         [field]="form.trueSensitivity"
         [min]="limits.sensitivity.min"
         [max]="limits.sensitivity.max"
         [step]="limits.sensitivity.step"
         [format]="sensitivityFormat"
-        hint="Change in weekly demand per standard deviation of the weather index. Sales follow the weather by about a week. This generates the hypothetical sales."
+        hint="Change in weekly sales when the past month runs unusually warm: about 4 °F above normal in midsummer, 6 to 10 °F in spring and fall. Rain makes a warm spell count for more, and the first fall frost pulls sales down. Sales lag the weather by about a week. This setting produces the hypothetical sales."
       />
       <app-slider
         controlId="assumed-sensitivity"
-        label="How the buyer thinks demand responds"
+        label="Buyer's estimate"
         [field]="form.assumedSensitivity"
         [min]="limits.sensitivity.min"
         [max]="limits.sensitivity.max"
         [step]="limits.sensitivity.step"
         [format]="sensitivityFormat"
-        hint="What the weather-adjusted plan assumes. Set it to 0 and both plans order the same."
+        hint="What the weather-adjusted plan believes. At 0% the buyer ignores the weather and both plans order the same."
       />
     </div>
   </section>
@@ -110,7 +123,7 @@
     <p class="text-sm text-ink-muted">
       How it works: the weather index is the last four weeks' warmth against normal, boosted when
       it's also wet, and pushed down from the first fall frost. Weekly demand is the curve × (1 +
-      sensitivity × last week's index), and both plans order up to their forecast for the lead time
+      the effect × last week's index), and both plans order up to their forecast for the lead time
       plus one week.
       <a
         class="text-brand underline"
