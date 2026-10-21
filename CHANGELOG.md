@@ -3,6 +3,14 @@
 All notable changes to the reorder demo are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- "Read the model", "Book an intro call" and "Source on GitHub" open in a new tab, so a visitor's
+  scenario stays in the demo tab, and screen readers announce "(opens in a new tab)". The
+  willawave.ai links still open in the same tab.
+
 ## [0.2.2.0] - 2026-10-21
 
 ### Added

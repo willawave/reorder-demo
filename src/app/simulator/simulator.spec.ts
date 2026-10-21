@@ -35,6 +35,32 @@ describe('Simulator', () => {
     expect(el.querySelector('a[href="https://cal.com/willawave/intro"]')).not.toBeNull();
   });
 
+  /*
+   * Value: protects=a visitor's scenario survives following an outside link
+   * (slider state is not in the URL), and screen readers hear the new tab;
+   * fails_when=an outside link drops target, noopener or the warning;
+   * why_new=no test covered link targets; seam=none; no_claim=real tab
+   * behaviour (browser-provided)
+   */
+  it('should open every outside link except willawave.ai in a new tab, and say so', async () => {
+    const { el } = await render();
+    const outside = [...el.querySelectorAll<HTMLAnchorElement>('a[href^="http"]')].filter(
+      (a) => new URL(a.href).hostname !== 'willawave.ai',
+    );
+    expect(outside.map((a) => a.textContent?.trim())).toEqual([
+      'Read the model (opens in a new tab)',
+      'Book an intro call (opens in a new tab)',
+      'Source on GitHub (opens in a new tab)',
+    ]);
+    for (const a of outside) {
+      expect(a.target).toBe('_blank');
+      expect(a.rel.split(' ')).toContain('noopener');
+    }
+    for (const a of el.querySelectorAll<HTMLAnchorElement>('a[href="https://willawave.ai"]')) {
+      expect(a.target).toBe('');
+    }
+  });
+
   it('should describe itself for search and link previews, indexable, on the canonical origin', async () => {
     await render();
     const meta = (selector: string) =>
