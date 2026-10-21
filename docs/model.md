@@ -26,6 +26,21 @@ illustrative and come from no real orders.
 - **Anomaly:** (measure − normal) ÷ SD. A week whose other seasons all agree (SD 0) has
   anomaly 0.
 
+### Data
+
+The weekly means are committed in `src/app/data/omaha-tmax.json`, and the page imports that file.
+The build never fetches anything. `pnpm data:noaa` (`scripts/noaa-to-json.mjs`) regenerates
+the file from the NCEI Access Data Service ("daily-summaries", no token, whole °F). It applies
+these rules:
+
+- a day with a quality flag (the second field of `TMAX_ATTRIBUTES`) or a non-numeric value is
+  dropped;
+- a week with fewer than 5 valid days is missing;
+- any missing season week fails the run, listing every such week, and nothing is written.
+
+The rules live in `scripts/noaa-weekly.mjs`, with table tests. That file takes the season
+calendar from `weather.ts`, so the data and the model always agree on which weeks are in season.
+
 ## Demand
 
 - **Factor:** `max(0, 1 + sensitivity × anomaly)`. Sensitivity is the fractional change in
