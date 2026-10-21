@@ -69,7 +69,17 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": true,
+            "coverageInclude": ["src/**/*.ts"],
+            "coverageExclude": [
+              "src/**/*.spec.ts",
+              "src/main*.ts",
+              "src/**/*.config*.ts",
+              "src/**/*.routes*.ts"
+            ]
+          }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",

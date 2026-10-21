@@ -12,7 +12,7 @@
  * The season calendar comes from the model itself, so the data and the app
  * can never disagree about which weeks are in season.
  */
-import { SEASON_WEEKS, seasonMondays } from '../src/app/model/weather.ts';
+import { seasonMondays } from '../src/app/model/weather.ts';
 
 export const MIN_VALID_DAYS = 5;
 
@@ -56,9 +56,6 @@ export function weeklyTmax(rows, firstYear, lastYear) {
       `${missing.length} season week(s) have fewer than ${MIN_VALID_DAYS} valid days:\n  ` +
         missing.join('\n  '),
     );
-  }
-  for (const values of Object.values(weeks)) {
-    if (values.length !== SEASON_WEEKS) throw new Error('season calendar is not 35 weeks');
   }
   return weeks;
 }

@@ -13,6 +13,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Real weather: weekly mean daily highs at Omaha Eppley Airfield for the 2010–2025 seasons,
   from NOAA GHCN-Daily. `pnpm data:noaa` regenerates the file and refuses to write one with
   a missing week.
+- Unit-test coverage is enforced in CI: 80% for app code, and 95% lines and 90% branches for
+  the model. `pnpm test:coverage` writes an HTML report to `coverage/`.
 
 ## [0.1.0.0] - 2026-10-21
 
