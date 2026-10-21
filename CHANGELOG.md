@@ -3,6 +3,13 @@
 All notable changes to the reorder demo are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- The weather sliders now use plain language and show percent values ("+30%" in place of
+  "+0.30 per SD"), in their own section: "Actual effect on sales" and "Buyer's estimate".
+
 ## [0.2.0.0] - 2026-10-21
 
 ### Added

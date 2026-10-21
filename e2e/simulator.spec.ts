@@ -110,7 +110,7 @@ test.describe('unit cost errors', () => {
 test.describe('edge cases', () => {
   test('makes both plans identical at assumed sensitivity 0', async ({ page }) => {
     await page.locator('#assumed-sensitivity').fill('0');
-    await expect(page.locator('output[for="assumed-sensitivity"]')).toHaveText('0.00 per SD');
+    await expect(page.locator('output[for="assumed-sensitivity"]')).toHaveText('0%');
     for (const row of await totals(page).locator('tr').all()) {
       const [normal, adjusted] = await row.locator('td').allTextContents();
       expect(adjusted).toBe(normal);
