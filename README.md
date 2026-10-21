@@ -1,59 +1,57 @@
-# ReorderDemo
+# Weather-adjusted reorder demo
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.3.
+Would the weather have changed your flea and tick order? This demo replays a real Omaha season
+week by week and compares two reorder plans for one product. The **normal plan** orders to the
+usual seasonal curve. The **weather-adjusted plan** scales that curve by the last four weeks of
+weather. Pick a season, move the sliders, and see when adjusting for weather pays off and when
+it doesn't.
 
-## Development server
+**Live:** https://reorder-demo.willawave.ai
 
-To start a local development server, run:
+## Real weather, hypothetical sales
 
-```bash
-ng serve
-```
+- **Weather is real:** NOAA GHCN-Daily for Omaha Eppley Airfield (`USW00014942`), seasons
+  2010–2025: daily highs, lows and rain.
+- **Sales are hypothetical:** the seasonal curve and the weather sensitivities are illustrative.
+  They come from no real orders.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+[`docs/model.md`](docs/model.md) sets out every rule: the weather index, demand, the ordering
+policy and what counts as a lost sale.
 
-## Code scaffolding
+## Run it
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Needs Node 24 and pnpm (the version is pinned in `package.json`).
 
 ```bash
-ng build
+pnpm install
+pnpm start              # dev server on http://localhost:4200
+pnpm test:coverage      # unit tests with the coverage gate (pnpm ng test to watch)
+pnpm test:scripts       # tests for the data and hosting scripts
+pnpm build:hosting      # static, prerendered build in dist/
+pnpm e2e                # browser tests and accessibility checks against that build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+`pnpm e2e` grades the built site, not the dev server, so run `pnpm build:hosting` first.
 
-## Running unit tests
+## Weather data
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+`pnpm data:noaa` downloads the daily records from NOAA and rewrites
+`src/app/data/omaha-weather.json`. It drops readings NOAA flags as failing quality control, and
+refuses to write the file if any season week has fewer than five valid days of highs or rain.
 
-```bash
-ng test
-```
+## Deploying
 
-## Running end-to-end tests
+The site is static, served by Firebase Hosting. [`docs/hosting.md`](docs/hosting.md) explains
+the choice. Releases go through `pnpm release:hosting`, which is for maintainers only: it
+deploys, checks the live site byte for byte, then tags the release.
 
-For end-to-end (e2e) testing, run:
+## Handing this off
 
-```bash
-ng e2e
-```
+[`docs/handoff.md`](docs/handoff.md) covers what a client needs to run and grow a tool like
+this: keeping dependencies current, refreshing the data, fitting the model to real sales, and
+moving the hosting.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Built by
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+[WillaWave](https://willawave.ai), with Angular 22 (signals, prerendered to static HTML) and
+Firebase Hosting.

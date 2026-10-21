@@ -5,8 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- A public `README.md` in place of the Angular CLI default, and `docs/handoff.md`: what a
+  client needs to keep a tool like this current, refresh the data, fit the model to real
+  sales and move the hosting.
+
 ### Changed
 
+- `pnpm release:hosting` byte-checks the live site on the custom domain,
+  `reorder-demo.willawave.ai`, now that its DNS and certificate are live.
 - "Read the model", "Book an intro call" and "Source on GitHub" open in a new tab, so a visitor's
   scenario stays in the demo tab, and screen readers announce "(opens in a new tab)". The
   willawave.ai links still open in the same tab.
