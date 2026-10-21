@@ -1,4 +1,15 @@
-import { SEASON_WEEKS, WeeklySeries, anomalies, normals, seasonMondays } from './weather';
+import {
+  FROST_SHIFT,
+  SEASON_WEEKS,
+  WET_GAIN,
+  WeeklySeries,
+  anomalies,
+  normals,
+  seasonMondays,
+  trailingMean,
+  weatherIndex,
+  wetness,
+} from './weather';
 
 const flat = (value: number): number[] => new Array(SEASON_WEEKS).fill(value);
 
@@ -105,5 +116,85 @@ describe('anomalies', () => {
 
   it('should refuse a year with no weather', () => {
     expect(() => anomalies(others, 2099)).toThrow(/no weather for 2099/);
+  });
+});
+
+/*
+ * Value: protects=the 4-week window demand responds to; fails_when=the window
+ * length or the season-start handling changes; why_new=weather model v2;
+ * seam=none
+ */
+describe('trailingMean', () => {
+  const values = [1, 2, 3, 4, 5, 6];
+  const cases: [t: number, expected: number][] = [
+    [0, 1],
+    [1, 1.5],
+    [3, 2.5],
+    [4, 3.5],
+    [5, 4.5],
+  ];
+  for (const [t, expected] of cases) {
+    it(`should average the 4 weeks ending at week ${t} to ${expected}`, () => {
+      expect(trailingMean(values, t)).toBe(expected);
+    });
+  }
+});
+
+/*
+ * Value: protects=Brad's rule that warm, wet weather raises demand and an
+ * early frost cuts it, as encoded in the index; fails_when=rain moves a cool
+ * stretch, the wet clamp or gain changes, or the frost shift starts in the
+ * wrong week; why_new=weather model v2; seam=none; no_claim=that the rule is
+ * right for every product (it is the buying-desk rule for this one)
+ */
+describe('weatherIndex', () => {
+  // The other seasons give every week a 60 °F normal (SD 10) and 1.0 in of
+  // rain (4-week totals: normal 4.0, SD 2.0, from week 3 on).
+  const others = {
+    tmax: { 2010: flat(50), 2011: flat(60), 2012: flat(70) },
+    prcp: { 2010: flat(0.5), 2011: flat(1), 2012: flat(1.5) },
+    frostWeek: { 2010: 30, 2011: 31, 2012: null },
+  };
+  const replay = (tmax: number, prcp: number, frostWeek: number | null = null) =>
+    weatherIndex(
+      {
+        tmax: { ...others.tmax, 2013: flat(tmax) },
+        prcp: { ...others.prcp, 2013: flat(prcp) },
+        frostWeek: { ...others.frostWeek, 2013: frostWeek },
+      },
+      2013,
+    );
+
+  const cases: [name: string, tmax: number, prcp: number, expected: number][] = [
+    ['warm and wet is amplified', 70, 1.5, 1 + WET_GAIN],
+    ['warm and normal rain is plain warmth', 70, 1, 1],
+    ['warm and dry is damped', 70, 0.5, 1 - WET_GAIN],
+    ['very wet is capped at +2 SD of rain', 70, 5, 1 + 2 * WET_GAIN],
+    ['bone dry is capped at -1 SD of rain', 70, 0, 1 - WET_GAIN],
+    ['cool and wet stays cool', 50, 1.5, -1],
+    ['cool and dry stays cool', 50, 0.5, -1],
+  ];
+  for (const [name, tmax, prcp, expected] of cases) {
+    it(`should score week 10: ${name}`, () => {
+      expect(replay(tmax, prcp)[10]).toBeCloseTo(expected, 10);
+    });
+  }
+
+  it('should drop the index by FROST_SHIFT from the frost week on, and not before', () => {
+    const index = replay(70, 1, 30);
+    expect(index[29]).toBeCloseTo(1, 10);
+    expect(index[30]).toBeCloseTo(1 - FROST_SHIFT, 10);
+    expect(index[34]).toBeCloseTo(1 - FROST_SHIFT, 10);
+  });
+
+  it('should halve demand at the default sensitivity when the frost lands in a normal week', () => {
+    expect(1 + 0.3 * (0 - FROST_SHIFT)).toBeCloseTo(0.5, 10);
+  });
+
+  it('should judge rain against the same window in the other seasons', () => {
+    // Week 0 has a one-week window: the others total 0.5, 1.0 and 1.5 there.
+    const wet = wetness({ ...others.prcp, 2013: flat(1.5) }, 2013);
+    expect(wet[0]).toBeCloseTo(1, 10);
+    expect(wet[3]).toBeCloseTo(1, 10);
   });
 });

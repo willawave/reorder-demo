@@ -2,12 +2,12 @@ import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { form } from '@angular/forms/signals';
 import { SiteFooter } from '../chrome/site-footer';
 import { SiteHeader } from '../chrome/site-header';
-import weather from '../data/omaha-tmax.json';
+import weather from '../data/omaha-weather.json';
 import { Seo } from '../seo/seo';
 import { BOOKING_URL } from '../site';
 import { BASELINE } from '../model/baseline';
 import { SimResult, simulate } from '../model/reorder';
-import { anomalies, seasonMondays } from '../model/weather';
+import { seasonMondays, weatherIndex } from '../model/weather';
 import { CashTable } from './cash-table';
 import { PlanComparison } from './plan-comparison';
 import { SeasonPicker } from './season-picker';
@@ -60,7 +60,7 @@ export class Simulator {
    */
   protected readonly shown = linkedSignal<
     { valid: boolean; settings: Settings; season: Season },
-    { season: Season; mondays: string[]; result: SimResult }
+    { season: Season; mondays: string[]; frostWeek: number | null; result: SimResult }
   >({
     source: () => ({
       valid: this.form().valid(),
@@ -73,12 +73,13 @@ export class Simulator {
         : {
             season,
             mondays: seasonMondays(season.year),
+            frostWeek: (weather.frostWeek as Record<number, number | null>)[season.year],
             result: simulate({
               ...settings,
               // Valid implies a number here; the form only lets null through as invalid.
               unitCost: Number(settings.unitCost),
               baseline: BASELINE,
-              anomalies: anomalies(weather.weeks, season.year),
+              weatherIndex: weatherIndex(weather, season.year),
             }),
           },
   });

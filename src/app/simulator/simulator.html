@@ -7,11 +7,12 @@
     </h1>
     <p class="text-lg">
       Replay a real Omaha season week by week. The normal plan orders to the usual seasonal curve.
-      The weather-adjusted plan scales that curve by how warm or cool the last two weeks ran. Move
-      the sliders to see when adjusting for weather pays off, and when it doesn't.
+      The weather-adjusted plan scales that curve by the last four weeks of weather: warm spells
+      raise it, more so when they're wet, and the first fall frost cuts it. Move the sliders to see
+      when adjusting for weather pays off, and when it doesn't.
     </p>
     <p class="rounded-md border border-line bg-surface-raised p-3 text-sm">
-      <strong>Weather is real</strong> (NOAA daily highs, Omaha Eppley Airfield).
+      <strong>Weather is real</strong> (NOAA daily highs, lows and rain, Omaha Eppley Airfield).
       <strong>Sales are hypothetical:</strong> a made-up product with a typical flea and tick
       season.
     </p>
@@ -81,7 +82,7 @@
         [max]="limits.sensitivity.max"
         [step]="limits.sensitivity.step"
         [format]="sensitivityFormat"
-        hint="Change in weekly demand per standard deviation of temperature above normal. This generates the hypothetical sales."
+        hint="Change in weekly demand per standard deviation of the weather index. Sales follow the weather by about a week. This generates the hypothetical sales."
       />
       <app-slider
         controlId="assumed-sensitivity"
@@ -101,10 +102,16 @@
       {{ shown().season.year }}: how the two plans did
     </h2>
     <app-plan-comparison [result]="shown().result" />
-    <app-cash-table [result]="shown().result" [mondays]="shown().mondays" />
+    <app-cash-table
+      [result]="shown().result"
+      [mondays]="shown().mondays"
+      [frostWeek]="shown().frostWeek"
+    />
     <p class="text-sm text-ink-muted">
-      How it works: weekly demand is the curve × (1 + sensitivity × temperature anomaly), and both
-      plans order up to their forecast for the lead time plus one week.
+      How it works: the weather index is the last four weeks' warmth against normal, boosted when
+      it's also wet, and pushed down from the first fall frost. Weekly demand is the curve × (1 +
+      sensitivity × last week's index), and both plans order up to their forecast for the lead time
+      plus one week.
       <a
         class="text-brand underline"
         href="https://github.com/willawave/reorder-demo/blob/main/docs/model.md"
