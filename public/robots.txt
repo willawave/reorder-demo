@@ -1,0 +1,11 @@
+# reorder-demo.willawave.ai
+
+User-agent: *
+Allow: /
+
+# Angular emits index.csr.html, an un-prerendered shell with no content.
+# firebase.json `ignore` keeps it off Hosting; this is the second line of
+# defence, because the two mechanisms fail differently.
+Disallow: /index.csr.html
+
+Sitemap: https://reorder-demo.willawave.ai/sitemap.xml

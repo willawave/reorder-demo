@@ -18,6 +18,12 @@ for (const theme of ['light', 'dark'] as const) {
     await expectNoViolations(page);
   });
 
+  test(`has no AXE violations on the 404 page in the ${theme} theme`, async ({ page }) => {
+    await page.goto('/404');
+    await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+    await expectNoViolations(page);
+  });
+
   test(`has no AXE violations with the unit-cost error showing in the ${theme} theme`, async ({
     page,
   }) => {

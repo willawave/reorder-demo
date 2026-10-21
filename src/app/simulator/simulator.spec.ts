@@ -35,6 +35,17 @@ describe('Simulator', () => {
     expect(el.querySelector('a[href="https://cal.com/willawave/intro"]')).not.toBeNull();
   });
 
+  it('should describe itself for search and link previews, indexable, on the canonical origin', async () => {
+    await render();
+    const meta = (selector: string) =>
+      document.head.querySelector(`meta[${selector}]`)?.getAttribute('content');
+    expect(meta('name="description"')).toContain('hypothetical sales');
+    expect(meta('name="robots"')).toBe('index, follow');
+    expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+      'https://reorder-demo.willawave.ai/',
+    );
+  });
+
   it('should open on 2012 with its result and 35 weeks in the cash table', async () => {
     const { el, text } = await render();
     expect(el.querySelector<HTMLInputElement>('input[value="2012"]')!.checked).toBe(true);

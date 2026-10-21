@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="WillaWave app icon">
+  <rect width="512" height="512" rx="112" fill="#005EB8"/>
+  <g transform="translate(76,146) scale(3.6)">
+    <path d="M4 14 C 12 52, 20 66, 27 66 C 35 66, 40 44, 45 30 C 48 22, 52 22, 55 30 C 60 44, 65 66, 73 66 C 80 66, 88 52, 96 14" fill="none" stroke="#7FB3E3" stroke-width="9" stroke-linecap="round" opacity="0.6" transform="translate(0,-8)"/>
+    <path d="M4 14 C 12 52, 20 66, 27 66 C 35 66, 40 44, 45 30 C 48 22, 52 22, 55 30 C 60 44, 65 66, 73 66 C 80 66, 88 52, 96 14" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round"/>
+  </g>
+</svg>

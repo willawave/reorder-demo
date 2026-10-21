@@ -18,6 +18,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   plans in a season-totals table and a week-by-week cash table, and ends on "Would this change
   your order?". The page states that the weather is real and the sales are hypothetical, and
   the default season's results are already in the prerendered HTML.
+- Page chrome ported from willawave.ai:
+  - the WillaWave favicons and header mark;
+  - a light and dark theme toggle that remembers the choice without a flash on load;
+  - search and link-preview tags on the `reorder-demo.willawave.ai` origin, plus
+    `robots.txt` and `sitemap.xml`;
+  - a 404 page that Hosting serves with a real 404 status.
+
+  `verify:build` now runs 18 checks.
+
 - Playwright tests for the page: happy paths, the unit-cost error state, edge cases (assumed
   sensitivity 0, extreme sensitivities, longest lead time), phone width, and no JavaScript.
 - Unit-test coverage is enforced in CI: 80% for app code, and 95% lines and 90% branches for

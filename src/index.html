@@ -2,10 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Reorder demo</title>
+    <title>Weather-adjusted reorder demo · WillaWave</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!--
+      Theme, resolved before first paint (ported from willawave-ai).
+
+      The page is prerendered static HTML, so without this a returning visitor
+      who chose light on a dark OS sees a flash of dark on every load. It must
+      be INLINE, BLOCKING and BEFORE the stylesheet; verify-build.mjs asserts
+      the ordering, not just its presence. localStorage access throws in Safari
+      private mode and with site data blocked, hence the try/catch. The key is
+      shared with src/app/theme/theme.ts.
+    -->
+    <script>
+      try {
+        var t = localStorage.getItem('ww-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <!--
+      favicon.ico stays at the public root as well as under brand/: crawlers and
+      older browsers probe /favicon.ico without reading this markup. Modern
+      browsers prefer the SVG.
+    -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="brand/favicon.svg" />
+    <link rel="apple-touch-icon" href="brand/apple-touch-icon.png" />
   </head>
   <body>
     <app-root></app-root>

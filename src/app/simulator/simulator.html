@@ -1,11 +1,4 @@
-<header class="border-b border-divider px-4 py-4">
-  <div class="mx-auto flex max-w-page items-center justify-between gap-4">
-    <p class="font-semibold tracking-tight">
-      <a class="inline-flex min-h-11 items-center" href="https://willawave.ai">WillaWave</a>
-      <span class="text-ink-muted"> · Reorder demo</span>
-    </p>
-  </div>
-</header>
+<app-site-header />
 
 <main class="mx-auto flex max-w-page flex-col gap-10 px-4 py-10">
   <section class="flex max-w-measure flex-col gap-4" aria-labelledby="page-title">
@@ -132,18 +125,11 @@
     <p>
       <a
         class="inline-flex min-h-11 items-center rounded-md bg-brand-fill px-5 font-semibold text-on-brand"
-        href="https://cal.com/willawave/intro"
+        [href]="bookingUrl"
         >Book an intro call</a
       >
     </p>
   </section>
 </main>
 
-<footer class="border-t border-divider px-4 py-8 text-sm text-ink-muted">
-  <div class="mx-auto flex max-w-page flex-wrap gap-x-6 gap-y-2">
-    <a class="inline-flex min-h-11 items-center" href="https://willawave.ai">willawave.ai</a>
-    <a class="inline-flex min-h-11 items-center" href="https://github.com/willawave/reorder-demo"
-      >Source on GitHub</a
-    >
-  </div>
-</footer>
+<app-site-footer />
