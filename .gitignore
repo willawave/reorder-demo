@@ -33,6 +33,8 @@ yarn-error.log
 /.angular/cache
 .sass-cache/
 /connect.lock
+# Firebase CLI's local deploy cache; release:hosting refuses a dirty tree
+/.firebase/
 /coverage
 /libpeerconnection.log
 testem.log
