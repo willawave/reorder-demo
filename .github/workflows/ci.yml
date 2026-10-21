@@ -29,7 +29,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm format:check
-      - run: pnpm ng test --watch=false
+      # Fails below the coverage thresholds in vitest-base.config.mts.
+      - run: pnpm test:coverage
       - run: pnpm test:scripts
       # Rebuilds first on purpose; see the header of scripts/verify-build.mjs.
       - run: pnpm verify:build

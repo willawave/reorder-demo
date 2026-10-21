@@ -68,6 +68,15 @@ test('drops non-numeric and empty values', () => {
   assert.equal(weeklyTmax(rows, 2012, 2012)[2012][0], 70);
 });
 
+test('drops a row with no TMAX field, and reads a row with no attributes as unflagged', () => {
+  const rows = season2012().map((r) => {
+    if (r.DATE === '2012-03-05') return { DATE: r.DATE, STATION: 'X' };
+    if (r.DATE === '2012-03-06') return { DATE: r.DATE, STATION: 'X', TMAX: '77' };
+    return r;
+  });
+  assert.equal(weeklyTmax(rows, 2012, 2012)[2012][0], 71.2); // (77 + 5 × 70) / 6 = 71.17
+});
+
 test('counts dropped values toward a missing week', () => {
   const rows = season2012(
     () => '70',

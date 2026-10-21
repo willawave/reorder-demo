@@ -57,3 +57,22 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Testing & coverage
+
+Coverage is enforced in CI, so a run below these thresholds fails the build:
+
+| Scope                                                                        | Lines / statements | Branches | Functions | Enforced by                                       |
+| ---------------------------------------------------------------------------- | ------------------ | -------- | --------- | ------------------------------------------------- |
+| All app code (`src/**`)                                                      | 80%                | 80%      | 80%       | `vitest-base.config.mts` via `pnpm test:coverage` |
+| Critical business logic: `src/app/model/**`                                  | 95%                | 90%      | 100%      | same file, per-folder threshold                   |
+| Critical script logic: `scripts/hosting-site.mjs`, `scripts/noaa-weekly.mjs` | 90%                | 90%      | 90%       | `pnpm test:scripts` (Node built-in coverage)      |
+
+- New logic ships with tests that keep it at or above its threshold. Put pure calculations in
+  `src/app/model/` or in a pure script module, so they fall under the stricter bar.
+- A new pure script module goes into the `--test-coverage-include` list in `test:scripts`.
+- Never lower a threshold or add a coverage exclusion to make a run pass. Add the tests, or ask
+  Brad.
+- Review coverage locally with `pnpm test:coverage`, then open `coverage/index.html`.
+- Unit tests cover the logic. Playwright (`e2e/`) covers what needs a real browser: rendering,
+  interaction, error states, layout and AXE.
