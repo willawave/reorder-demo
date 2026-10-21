@@ -1,4 +1,4 @@
-import { Component, computed, linkedSignal, signal } from '@angular/core';
+import { Component, linkedSignal, signal } from '@angular/core';
 import { form } from '@angular/forms/signals';
 import weather from '../data/omaha-tmax.json';
 import { BASELINE } from '../model/baseline';
@@ -7,7 +7,7 @@ import { anomalies, seasonMondays } from '../model/weather';
 import { CashTable } from './cash-table';
 import { PlanComparison } from './plan-comparison';
 import { SeasonPicker } from './season-picker';
-import { DEFAULT_SEASON, SEASONS } from './seasons';
+import { DEFAULT_SEASON, SEASONS, Season } from './seasons';
 import { DEFAULT_SETTINGS, LIMITS, Settings, settingsSchema } from './settings';
 import { Slider } from './slider';
 import { formatDollars } from './summary';
@@ -34,33 +34,35 @@ export class Simulator {
   protected readonly settings = signal<Settings>({ ...DEFAULT_SETTINGS });
   protected readonly form = form(this.settings, settingsSchema);
 
-  private readonly year = computed(() => this.season().year);
-  protected readonly mondays = computed(() => seasonMondays(this.year()));
-  private readonly anomalies = computed(() => anomalies(weather.weeks, this.year()));
-
   /*
    * Recomputed whenever the inputs are valid. While unit cost is empty or out
-   * of range, the last valid result stays on screen instead of NaN or $0.
+   * of range, the last valid result stays on screen instead of NaN or $0, and
+   * it keeps the season it was computed for: picking another season meanwhile
+   * must not relabel old numbers with the new season's heading and dates.
    */
-  protected readonly result = linkedSignal<
-    { valid: boolean; settings: Settings; anomalies: number[] },
-    SimResult
+  protected readonly shown = linkedSignal<
+    { valid: boolean; settings: Settings; season: Season },
+    { season: Season; mondays: string[]; result: SimResult }
   >({
     source: () => ({
       valid: this.form().valid(),
       settings: this.settings(),
-      anomalies: this.anomalies(),
+      season: this.season(),
     }),
-    computation: ({ valid, settings, anomalies }, previous) =>
+    computation: ({ valid, settings, season }, previous) =>
       !valid && previous
         ? previous.value
-        : simulate({
-            ...settings,
-            // Valid implies a number here; the form only lets null through as invalid.
-            unitCost: Number(settings.unitCost),
-            baseline: BASELINE,
-            anomalies,
-          }),
+        : {
+            season,
+            mondays: seasonMondays(season.year),
+            result: simulate({
+              ...settings,
+              // Valid implies a number here; the form only lets null through as invalid.
+              unitCost: Number(settings.unitCost),
+              baseline: BASELINE,
+              anomalies: anomalies(weather.weeks, season.year),
+            }),
+          },
   });
 
   /** Empty or unparseable reads as null, which the schema reports as required. */

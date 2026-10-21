@@ -105,10 +105,10 @@
 
   <section class="flex flex-col gap-6" aria-labelledby="results-title">
     <h2 id="results-title" class="text-xl font-semibold">
-      {{ season().year }}: how the two plans did
+      {{ shown().season.year }}: how the two plans did
     </h2>
-    <app-plan-comparison [result]="result()" />
-    <app-cash-table [result]="result()" [mondays]="mondays()" />
+    <app-plan-comparison [result]="shown().result" />
+    <app-cash-table [result]="shown().result" [mondays]="shown().mondays" />
     <p class="text-sm text-ink-muted">
       How it works: weekly demand is the curve × (1 + sensitivity × temperature anomaly), and both
       plans order up to their forecast for the lead time plus one week.
