@@ -14,7 +14,5 @@
       rendered from `brand/og-card.html`.
 - [ ] **Run LinkedIn Post Inspector on `https://reorder-demo.willawave.ai/` once** (Brad, by
       hand) so LinkedIn caches the new card before the article goes out.
-- [ ] **Radio buttons render as 44px circles.** The global touch-target rule in `styles.css`
-      sizes them. The label is already the large click target, so the circle could shrink
-      to normal size. This needs a decision on how the target-size test treats a radio inside
-      a label.
+- [x] **Radio buttons render as 44px circles.** Kept as is (Brad, 2026-10-21): the global
+      touch-target rule in `styles.css` sizes them and the look is fine. No change.
