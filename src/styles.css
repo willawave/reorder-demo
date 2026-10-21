@@ -1,0 +1,246 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens — copied from willawave-ai so the demo matches willawave.ai.
+ *
+ * Every contrast ratio below was computed, not assumed. Figures are against the
+ * surface named in the comment. WCAG AA needs 4.5:1 for normal text, 3:1 for
+ * large text and for non-text UI boundaries (1.4.11).
+ *
+ * The dark ladder tops out at #242424 deliberately: #3E8CEA hits 4.54:1 there,
+ * so any surface lighter than that would fail for brand-colored text.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --ww-surface: #ffffff;
+  --ww-surface-raised: #f7f7f7;
+  --ww-surface-elevated: #f0f0f0;
+
+  /* Text */
+  --ww-ink: #1a1a1a; /* 17.40:1 on surface */
+  --ww-ink-muted: #5c5c5c; /*  6.69:1 on surface */
+
+  /* Brand */
+  --ww-brand: #005eb8; /*  6.38:1 on surface  (text + link) */
+  --ww-brand-fill: #005eb8; /* button fill */
+  --ww-on-brand: #ffffff; /*  6.38:1 on brand fill */
+
+  /* Lines */
+  --ww-border: #767676; /*  4.54:1 on surface — input/control boundary (1.4.11) */
+  --ww-divider: #d4d4d4; /* decorative only, no minimum */
+
+  /* Status */
+  --ww-error: #b3261e; /*  6.54:1 on surface */
+
+  /* Disabled submit — the state visible at the conversion moment */
+  --ww-disabled-fill: #e5e7eb;
+  --ww-disabled-ink: #5c5c5c; /*  5.40:1 on disabled fill */
+
+  /* Focus ring — non-text, needs 3:1 */
+  --ww-focus: #005eb8; /*  6.38:1 on surface */
+  --ww-focus-on-brand: #ffffff; /* 6.38:1 on brand fill */
+}
+
+/*
+ * Theme resolution has THREE states, not two.
+ *
+ *   no [data-theme]        -> follow the OS (the default; most visitors)
+ *   [data-theme="light"]   -> explicit light, even on a dark OS
+ *   [data-theme="dark"]    -> explicit dark, even on a light OS
+ *
+ * The `:not([data-theme='light'])` guard below is the whole point: without it
+ * the media query wins over an explicit light choice, and a visitor who picked
+ * light on a dark machine gets a dark page.
+ *
+ * The two dark blocks below MUST declare identical values. They are duplicated
+ * on purpose: `light-dark()` would collapse them into one declaration per
+ * token, but on a browser that does not support it every token becomes invalid
+ * and the page renders unstyled -- a hard failure on the one page whose job is
+ * credibility with a reader. Duplication degrades to nothing.
+ * styles.spec.ts asserts the two blocks stay in sync, so this is guarded by a
+ * test rather than by remembering.
+ */
+
+/* --- dark, block 1 of 2: system preference --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ww-surface: #121212;
+    --ww-surface-raised: #1a1a1a;
+    --ww-surface-elevated: #242424;
+
+    --ww-ink: #e6e6e6; /* 15.01 / 13.94 / 12.44 across the ladder */
+    --ww-ink-muted: #a1a1a1; /*  7.25 /  6.74 /  6.01 across the ladder */
+
+    --ww-brand: #3e8cea; /*  5.48 /  5.09 /  4.54 across the ladder */
+    --ww-brand-fill: #005eb8; /* fill stays brand; white on it is 6.38 either theme */
+    --ww-on-brand: #ffffff;
+
+    --ww-border: #8a8a8a; /*  5.43:1 on base surface */
+    --ww-divider: #2e2e2e;
+
+    --ww-error: #f2b8b5; /* 10.97:1 on base surface */
+
+    --ww-disabled-fill: #2e2e2e;
+    --ww-disabled-ink: #a1a1a1; /*  5.26:1 on disabled fill */
+
+    --ww-focus: #3e8cea; /*  5.48:1 on base surface */
+    --ww-focus-on-brand: #ffffff;
+  }
+}
+
+/* --- dark, block 2 of 2: explicit choice. Keep identical to block 1. --- */
+:root[data-theme='dark'] {
+  --ww-surface: #121212;
+  --ww-surface-raised: #1a1a1a;
+  --ww-surface-elevated: #242424;
+
+  --ww-ink: #e6e6e6; /* 15.01 / 13.94 / 12.44 across the ladder */
+  --ww-ink-muted: #a1a1a1; /*  7.25 /  6.74 /  6.01 across the ladder */
+
+  --ww-brand: #3e8cea; /*  5.48 /  5.09 /  4.54 across the ladder */
+  --ww-brand-fill: #005eb8; /* fill stays brand; white on it is 6.38 either theme */
+  --ww-on-brand: #ffffff;
+
+  --ww-border: #8a8a8a; /*  5.43:1 on base surface */
+  --ww-divider: #2e2e2e;
+
+  --ww-error: #f2b8b5; /* 10.97:1 on base surface */
+
+  --ww-disabled-fill: #2e2e2e;
+  --ww-disabled-ink: #a1a1a1; /*  5.26:1 on disabled fill */
+
+  --ww-focus: #3e8cea; /*  5.48:1 on base surface */
+  --ww-focus-on-brand: #ffffff;
+}
+
+/*
+ * Theme-conditional visibility: .when-light / .when-dark.
+ *
+ * Two consumers, same three states as the tokens above: the brand mark in the
+ * header, and the theme toggle's icon and its screen-reader label.
+ *
+ * The mark used <picture media="(prefers-color-scheme: dark)">, which cannot
+ * see [data-theme] -- an explicit dark choice on a light OS rendered the dark
+ * page with the light mark. Do not put that back.
+ *
+ * The toggle used a signal, so prerendered HTML baked in one branch for every
+ * visitor and swapped it after hydration. Choosing in CSS means the prerendered
+ * markup is identical for everyone and nothing swaps. Do not put that back
+ * either -- and note the toggle's accessible name depends on `display: none`
+ * excluding the hidden span from the name computation, so hiding these with
+ * visibility or opacity instead would announce both labels at once.
+ */
+.when-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .when-light {
+    display: none;
+  }
+  :root:not([data-theme='light']) .when-dark {
+    display: block;
+  }
+}
+
+:root[data-theme='dark'] .when-light {
+  display: none;
+}
+:root[data-theme='dark'] .when-dark {
+  display: block;
+}
+:root[data-theme='light'] .when-light {
+  display: block;
+}
+:root[data-theme='light'] .when-dark {
+  display: none;
+}
+
+@theme inline {
+  --color-surface: var(--ww-surface);
+  --color-surface-raised: var(--ww-surface-raised);
+  --color-surface-elevated: var(--ww-surface-elevated);
+  --color-ink: var(--ww-ink);
+  --color-ink-muted: var(--ww-ink-muted);
+  --color-brand: var(--ww-brand);
+  --color-brand-fill: var(--ww-brand-fill);
+  --color-on-brand: var(--ww-on-brand);
+  --color-line: var(--ww-border);
+  --color-divider: var(--ww-divider);
+  --color-error: var(--ww-error);
+  --color-disabled-fill: var(--ww-disabled-fill);
+  --color-disabled-ink: var(--ww-disabled-ink);
+  --color-focus: var(--ww-focus);
+  --color-focus-on-brand: var(--ww-focus-on-brand);
+
+  /* Type scale */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.375rem;
+  --text-4xl: 3rem;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+
+  /* Page width and reading measure */
+  --container-page: 68rem;
+  --container-measure: 36rem;
+}
+
+html {
+  background-color: var(--ww-surface);
+  color: var(--ww-ink);
+}
+
+body {
+  margin: 0;
+  background-color: var(--ww-surface);
+  color: var(--ww-ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus everywhere, at a verified 3:1+ against its surface. */
+:focus-visible {
+  outline: 2px solid var(--ww-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * Touch targets: 44x44 minimum (WCAG 2.5.8 / Apple HIG).
+ *
+ * Deliberately NOT applied to `a`. min-height/min-width have no effect on
+ * non-replaced inline boxes, so a global rule on links is silently inert for
+ * the inline anchors that actually exist -- and on links made inline-block,
+ * a global min-width would inflate every short link inside
+ * prose. The controls below are replaced or block-level and honor it.
+ * Standalone links (nav, CTA, cards) get sized per component with padding.
+ */
+button,
+input,
+textarea,
+select,
+[role='button'] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
