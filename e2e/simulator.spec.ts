@@ -30,16 +30,21 @@ test.describe('happy paths', () => {
     await expect(cashRows(page).first().locator('th')).toHaveText('Mar 5');
   });
 
-  test('replays 2015 and then 2024 when picked', async ({ page }) => {
+  test('replays 2015 and then 2022 when picked', async ({ page }) => {
     const first = await sentence(page).textContent();
     await page.getByRole('radio', { name: /2015/ }).check();
     await expect(page.getByRole('heading', { name: '2015: how the two plans did' })).toBeVisible();
     await expect(cashRows(page).first().locator('th')).toHaveText('Mar 2');
     await expect(sentence(page)).not.toHaveText(first!);
 
-    await page.getByRole('radio', { name: /2024/ }).check();
-    await expect(page.getByRole('heading', { name: '2024: how the two plans did' })).toBeVisible();
-    await expect(cashRows(page).first().locator('th')).toHaveText('Mar 4');
+    await page.getByRole('radio', { name: /2022/ }).check();
+    await expect(page.getByRole('heading', { name: '2022: how the two plans did' })).toBeVisible();
+    await expect(cashRows(page).first().locator('th')).toHaveText('Mar 7');
+    // 2022's first fall frost (30 °F on Oct 8) is marked in its week's row, and only there.
+    await expect(page.getByText('(first frost)')).toHaveCount(1);
+    await expect(cashRows(page).filter({ hasText: '(first frost)' }).locator('th')).toContainText(
+      'Oct 3',
+    );
   });
 
   for (const id of [

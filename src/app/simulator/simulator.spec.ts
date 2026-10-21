@@ -57,12 +57,12 @@ describe('Simulator', () => {
   it('should replay another season when one is picked', async () => {
     const { el, text, stable } = await render();
     const before = text('app-plan-comparison p');
-    const radio = el.querySelector<HTMLInputElement>('input[value="2024"]')!;
+    const radio = el.querySelector<HTMLInputElement>('input[value="2022"]')!;
     radio.checked = true;
     radio.dispatchEvent(new Event('change'));
     await stable();
-    expect(text('#results-title')).toContain('2024');
-    expect(text('app-cash-table tbody tr th')).toBe('Mar 4');
+    expect(text('#results-title')).toContain('2022');
+    expect(text('app-cash-table tbody tr th')).toBe('Mar 7');
     expect(text('app-plan-comparison p')).not.toBe(before);
   });
 

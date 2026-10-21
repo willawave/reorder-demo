@@ -19,7 +19,7 @@ const season: SimInputs = {
   baseline: Array.from({ length: 35 }, (_, w) =>
     Math.round(20 + 80 * Math.sin((Math.PI * w) / 34)),
   ),
-  anomalies: Array.from({ length: 35 }, (_, w) => 1.5 * Math.sin(w / 3)),
+  weatherIndex: Array.from({ length: 35 }, (_, w) => 1.5 * Math.sin(w / 3)),
   trueSensitivity: 0.3,
   assumedSensitivity: 0.3,
   leadTimeWeeks: 3,
@@ -60,9 +60,9 @@ describe('demandFactor', () => {
   }
 
   it('should clamp actual demand and the adjusted forecast at 0 for a large negative anomaly', () => {
-    const inputs = { baseline: [40, 40], anomalies: [-5, -5], trueSensitivity: 0.5 };
+    const inputs = { baseline: [40, 40], weatherIndex: [-5, -5], trueSensitivity: 0.5 };
     expect(actualDemand(inputs)).toEqual([0, 0]);
-    expect(adjustedForecast(inputs.baseline, inputs.anomalies, 0.5)(1, 1)).toBe(0);
+    expect(adjustedForecast(inputs.baseline, inputs.weatherIndex, 0.5)(1, 1)).toBe(0);
   });
 });
 
@@ -111,9 +111,9 @@ describe('simulate', () => {
 
   for (const t of [0, 1, 5, 17, 30, 34]) {
     it(`should leave orders up to week ${t} unchanged when later weather changes`, () => {
-      const changed = season.anomalies.map((a, w) => (w > t ? (w % 2 ? 9 : -9) : a));
+      const changed = season.weatherIndex.map((a, w) => (w > t ? (w % 2 ? 9 : -9) : a));
       const before = simulate(season);
-      const after = simulate({ ...season, anomalies: changed });
+      const after = simulate({ ...season, weatherIndex: changed });
       for (const plan of ['normal', 'adjusted'] as const) {
         const ordered = (r: typeof before) => r[plan].weeks.slice(0, t + 1).map((w) => w.ordered);
         expect(ordered(after)).toEqual(ordered(before));
@@ -121,12 +121,23 @@ describe('simulate', () => {
     });
   }
 
+  it('should make sales follow the weather index by one week', () => {
+    // Week 0 has no earlier season week and uses its own index.
+    const demand = actualDemand({
+      baseline: [10, 10, 10, 10],
+      weatherIndex: [2, 0, -2, 4],
+      trueSensitivity: 0.5,
+    });
+    expect(demand).toEqual([20, 20, 10, 0]);
+  });
+
   it('should count an order that arrives after the season as cash and excess, never as sold', () => {
-    // A warm week 3 lifts the adjusted forecast for weeks 4 and 5. With lead
-    // time 3 that order is due in week 6, after the 6-week season ends.
+    // A warm week 3 (index 4, factor 3 at 0.5) lifts the adjusted forecast for
+    // weeks 4 and 5 to 60 against a position of 20, so week 3 orders 40. With
+    // lead time 3 that order is due in week 6, after the 6-week season ends.
     const { adjusted } = simulate({
       baseline: [0, 0, 0, 0, 10, 10],
-      anomalies: [0, 0, 0, 4, 0, 0],
+      weatherIndex: [0, 0, 0, 4, 0, 0],
       trueSensitivity: 0,
       assumedSensitivity: 0.5,
       leadTimeWeeks: 3,
@@ -134,18 +145,18 @@ describe('simulate', () => {
       startingInventory: 0,
       unitCost: 2,
     });
-    expect(adjusted.weeks[3].ordered).toBe(20);
+    expect(adjusted.weeks[3].ordered).toBe(40);
     expect(adjusted.weeks.map((w) => w.arrived)).toEqual([0, 0, 0, 10, 10, 0]);
-    expect(adjusted.cashCommitted).toBe(80);
-    expect(adjusted.excessUnits).toBe(20);
-    expect(adjusted.excessValue).toBe(40);
+    expect(adjusted.cashCommitted).toBe(120);
+    expect(adjusted.excessUnits).toBe(40);
+    expect(adjusted.excessValue).toBe(80);
     expect(adjusted.weeks.reduce((sum, w) => sum + w.sold, 0)).toBe(20);
   });
 
   it('should lose unmet demand rather than backorder it', () => {
     const { normal } = simulate({
       baseline: [10, 10, 10],
-      anomalies: [0, 0, 0],
+      weatherIndex: [0, 0, 0],
       trueSensitivity: 0,
       assumedSensitivity: 0,
       leadTimeWeeks: 1,
@@ -161,11 +172,12 @@ describe('simulate', () => {
   });
 
   describe('a hand-traced 6-week season', () => {
-    // Weeks 1–2 run 3 SD warm. True and assumed sensitivity are both 0.5, so
-    // actual demand is 2.5 × baseline in those weeks.
+    // The index reads 3 SD warm at the end of weeks 1 and 2. Sales lag it by a
+    // week, so weeks 2 and 3 sell 2.5 × baseline (true sensitivity 0.5), while
+    // the adjusted plan sees the warmth one week earlier, when it orders.
     const { demand, normal, adjusted } = simulate({
       baseline: [10, 20, 30, 30, 20, 10],
-      anomalies: [0, 3, 3, 0, 0, 0],
+      weatherIndex: [0, 3, 3, 0, 0, 0],
       trueSensitivity: 0.5,
       assumedSensitivity: 0.5,
       leadTimeWeeks: 1,
@@ -174,8 +186,8 @@ describe('simulate', () => {
       unitCost: 2,
     });
 
-    it('should generate demand from the true sensitivity', () => {
-      expect(demand).toEqual([10, 50, 75, 30, 20, 10]);
+    it('should generate demand from the true sensitivity, a week behind the index', () => {
+      expect(demand).toEqual([10, 20, 75, 75, 20, 10]);
     });
 
     it('should trace the normal plan, which runs short in the warm spell', () => {
@@ -183,42 +195,42 @@ describe('simulate', () => {
       expect(rows(normal)).toEqual([
         // arrived demand sold short ordered cash onHandEnd
         [ 0, 10, 10,  0, 40,  80, 10],
-        [40, 50, 50,  0, 60, 120,  0],
-        [60, 75, 60, 15, 50, 100,  0],
-        [50, 30, 30,  0, 10,  20, 20],
-        [10, 20, 20,  0,  0,   0, 10],
+        [40, 20, 20,  0, 30,  60, 30],
+        [30, 75, 60, 15, 50, 100,  0],
+        [50, 75, 50, 25, 30,  60,  0],
+        [30, 20, 20,  0,  0,   0, 10],
         [ 0, 10, 10,  0,  0,   0,  0],
       ]);
       expect(normal).toMatchObject({
-        unitsOrdered: 160,
-        cashCommitted: 320,
-        weeksShort: 1,
-        unitsShort: 15,
+        unitsOrdered: 150,
+        cashCommitted: 300,
+        weeksShort: 2,
+        unitsShort: 40,
         excessUnits: 0,
         excessValue: 0,
       });
     });
 
-    it('should trace the adjusted plan, which covers the spell and ends with excess', () => {
-      // Week 1 orders for (30 + 30) × 1.75, the mean of anomalies 0 and 3.
-      // Week 2 orders for (30 + 20) × 2.5, less the 30 on hand.
+    it('should trace the adjusted plan, which covers the spell and ends with some excess', () => {
+      // Week 1 sees index 3 and orders for (30 + 30) × 2.5, less the 30 on hand.
+      // Week 2 still sees 3: (30 + 20) × 2.5, less the 75 on hand.
       // prettier-ignore
       expect(rows(adjusted)).toEqual([
         // arrived demand sold short ordered cash onHandEnd
         [  0, 10, 10, 0,  40,  80, 10],
-        [ 40, 50, 50, 0, 105, 210,  0],
-        [105, 75, 75, 0,  95, 190, 30],
-        [ 95, 30, 30, 0,   0,   0, 95],
-        [  0, 20, 20, 0,   0,   0, 75],
-        [  0, 10, 10, 0,   0,   0, 65],
+        [ 40, 20, 20, 0, 120, 240, 30],
+        [120, 75, 75, 0,  50, 100, 75],
+        [ 50, 75, 75, 0,   0,   0, 50],
+        [  0, 20, 20, 0,   0,   0, 30],
+        [  0, 10, 10, 0,   0,   0, 20],
       ]);
       expect(adjusted).toMatchObject({
-        unitsOrdered: 240,
-        cashCommitted: 480,
+        unitsOrdered: 210,
+        cashCommitted: 420,
         weeksShort: 0,
         unitsShort: 0,
-        excessUnits: 65,
-        excessValue: 130,
+        excessUnits: 20,
+        excessValue: 40,
       });
     });
   });
@@ -234,7 +246,7 @@ describe('simulate', () => {
   });
 
   const invalid: [name: string, change: Partial<SimInputs>, message: RegExp][] = [
-    ['mismatched lengths', { anomalies: [0, 0] }, /baseline has 35 weeks/],
+    ['mismatched lengths', { weatherIndex: [0, 0] }, /baseline has 35 weeks/],
     ['a lead time of 0', { leadTimeWeeks: 0 }, /lead time/],
     ['a fractional lead time', { leadTimeWeeks: 1.5 }, /lead time/],
     ['a negative MOQ', { moq: -1 }, /MOQ/],

@@ -16,8 +16,8 @@
 export interface SimInputs {
   /** Hypothetical units per season week, before weather. */
   readonly baseline: readonly number[];
-  /** Observed standardised anomaly per season week. */
-  readonly anomalies: readonly number[];
+  /** Observed weather index per season week, in standard deviations (weatherIndex in weather.ts). */
+  readonly weatherIndex: readonly number[];
   /** How demand really responds to weather. Generates the sales. */
   readonly trueSensitivity: number;
   /** What the buyer believes. Drives the weather-adjusted forecast. */
@@ -60,18 +60,28 @@ export interface SimResult {
 /** Forecast of week `k`'s demand, made at the end of week `t`. */
 export type Forecast = (t: number, k: number) => number;
 
-/** 1 + sensitivity × anomaly, clamped so demand never goes negative. */
-export function demandFactor(sensitivity: number, anomaly: number): number {
-  return Math.max(0, 1 + sensitivity * anomaly);
+/** 1 + sensitivity × index, clamped so demand never goes negative. */
+export function demandFactor(sensitivity: number, index: number): number {
+  return Math.max(0, 1 + sensitivity * index);
 }
+
+/*
+ * Sales follow the weather by a week (Brad, from the buying desk: people buy
+ * after they notice fleas and ticks, and stop after a frost kills them off).
+ * So week t's sales respond to the index observed at the end of week t − 1,
+ * the same index the buyer sees when placing week t − 1's order. Week 0 has
+ * no earlier week in the season and uses its own.
+ */
+export const SALES_LAG_WEEKS = 1;
 
 /** The synthetic sales: whole units, driven by the true sensitivity. */
 export function actualDemand(
-  inputs: Pick<SimInputs, 'baseline' | 'anomalies' | 'trueSensitivity'>,
+  inputs: Pick<SimInputs, 'baseline' | 'weatherIndex' | 'trueSensitivity'>,
 ): number[] {
-  return inputs.baseline.map((units, week) =>
-    Math.round(units * demandFactor(inputs.trueSensitivity, inputs.anomalies[week])),
-  );
+  return inputs.baseline.map((units, week) => {
+    const index = inputs.weatherIndex[Math.max(0, week - SALES_LAG_WEEKS)];
+    return Math.round(units * demandFactor(inputs.trueSensitivity, index));
+  });
 }
 
 /** The normal plan forecasts the baseline. Nothing sells after the season. */
@@ -80,21 +90,18 @@ export function normalForecast(baseline: readonly number[]): Forecast {
 }
 
 /**
- * The weather-adjusted plan scales the baseline by the mean anomaly of the
- * last two observed weeks (only week 0 at t = 0), held flat over the horizon.
- * It reads weather up to week t and never after.
+ * The weather-adjusted plan scales the baseline by the weather index observed
+ * this week, held flat over the horizon. The index is already a multi-week
+ * trailing value (see weatherIndex in weather.ts), and it reads weather up to
+ * week t and never after.
  */
 export function adjustedForecast(
   baseline: readonly number[],
-  anomalies: readonly number[],
+  weatherIndex: readonly number[],
   assumedSensitivity: number,
 ): Forecast {
-  return (t, k) => {
-    if (k >= baseline.length) return 0;
-    const recent = anomalies.slice(Math.max(0, t - 1), t + 1);
-    const mean = recent.reduce((sum, a) => sum + a, 0) / recent.length;
-    return baseline[k] * demandFactor(assumedSensitivity, mean);
-  };
+  return (t, k) =>
+    k >= baseline.length ? 0 : baseline[k] * demandFactor(assumedSensitivity, weatherIndex[t]);
 }
 
 /** Units to order for a gap between target and position: at least the MOQ. */
@@ -155,9 +162,9 @@ export function runPlan(
 
 /** Both plans against the same synthetic season. */
 export function simulate(inputs: SimInputs): SimResult {
-  if (inputs.baseline.length !== inputs.anomalies.length) {
+  if (inputs.baseline.length !== inputs.weatherIndex.length) {
     throw new RangeError(
-      `baseline has ${inputs.baseline.length} weeks but anomalies has ${inputs.anomalies.length}`,
+      `baseline has ${inputs.baseline.length} weeks but the weather index has ${inputs.weatherIndex.length}`,
     );
   }
   if (!Number.isInteger(inputs.leadTimeWeeks) || inputs.leadTimeWeeks < 1) {
@@ -176,7 +183,7 @@ export function simulate(inputs: SimInputs): SimResult {
     adjusted: runPlan(
       inputs,
       demand,
-      adjustedForecast(inputs.baseline, inputs.anomalies, inputs.assumedSensitivity),
+      adjustedForecast(inputs.baseline, inputs.weatherIndex, inputs.assumedSensitivity),
     ),
   };
 }

@@ -12,11 +12,12 @@ export interface Settings {
 }
 
 /*
- * Defaults chosen so each preset shows its story without touching a slider:
- * at these values the normal plan runs short in March 2012 and in October
- * 2024 while the adjusted plan does not, and in 2015 the adjusted plan saves
- * a little cash but runs short more often. MOQ 0 because a minimum order
- * pads late-season stock enough to hide the 2024 story.
+ * Defaults chosen so each preset shows its story without touching a slider
+ * (weather model v2): in 2012 the normal plan loses 76 sales, 56 of them in
+ * March and April, and the adjusted plan none; in 2015 both plans cope with a
+ * cool summer; in 2022 the adjusted plan sees the early frost and ends with
+ * 14 units left over against 33. premise.spec.ts checks that across all 16
+ * seasons the adjusted plan comes out ahead at these values.
  */
 export const DEFAULT_SETTINGS: Settings = {
   leadTimeWeeks: 2,

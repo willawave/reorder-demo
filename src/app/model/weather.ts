@@ -73,6 +73,71 @@ export function anomalies(series: WeeklySeries, replayYear: number): number[] {
   return weeks.map((value, week) => (sd[week] === 0 ? 0 : (value - mean[week]) / sd[week]));
 }
 
+/*
+ * The weather index: what demand responds to (weather model v2, Brad's rule
+ * from the buying desk: warm, wet weather raises demand).
+ *
+ * Demand follows SUSTAINED weather, so the index averages the last
+ * WINDOW_WEEKS weeks. A single week's temperature anomaly barely predicts the
+ * weeks after it (lag-2 correlation 0.07 at Omaha, 2010–2025), so a plan that
+ * reacted to it was reacting to noise; a 4-week trailing mean persists
+ * (0.61 two weeks on), which is what lets a weather-adjusted order help.
+ *
+ * Rain amplifies warmth and nothing else: a warm, wet stretch scores higher
+ * than a warm, dry one, while a cool stretch stays cool however wet it is.
+ *
+ * The first fall frost (Brad's rule: an early frost cuts demand) is weather
+ * too, so it enters the index rather than bypassing it: from the frost week
+ * on, the index drops by FROST_SHIFT. At the page's default sensitivity of
+ * 0.3 that halves demand (1 + 0.3 × −5/3 = 0.5). Keeping it inside the index
+ * keeps the honesty rule: a buyer who assumes weather doesn't matter
+ * (assumed sensitivity 0) ignores the frost as well.
+ */
+export const WINDOW_WEEKS = 4;
+export const WET_GAIN = 0.3;
+export const FROST_SHIFT = 5 / 3;
+const WET_CLAMP = { min: -1, max: 2 } as const;
+
+/** Mean of `values` over the `k` weeks ending at week `t` (fewer at the season start). */
+export function trailingMean(values: readonly number[], t: number, k = WINDOW_WEEKS): number {
+  const window = values.slice(Math.max(0, t - k + 1), t + 1);
+  return window.reduce((sum, v) => sum + v, 0) / window.length;
+}
+
+export interface SeasonWeather {
+  readonly tmax: WeeklySeries;
+  readonly prcp: WeeklySeries;
+  /** First season week with a fall frost, or null. */
+  readonly frostWeek: Readonly<Record<number, number | null>>;
+}
+
+/**
+ * Standardised anomaly of the rain total over the last WINDOW_WEEKS weeks,
+ * against the same window in the other seasons (leave-one-out, as for temperature).
+ */
+export function wetness(prcp: WeeklySeries, replayYear: number): number[] {
+  const windowTotals = Object.fromEntries(
+    Object.entries(prcp).map(([year, weeks]) => [
+      year,
+      weeks.map((_, t) => trailingMean(weeks, t) * Math.min(t + 1, WINDOW_WEEKS)),
+    ]),
+  );
+  return anomalies(windowTotals, replayYear);
+}
+
+/** The index demand responds to, one value per season week, in standard deviations. */
+export function weatherIndex(weather: SeasonWeather, replayYear: number): number[] {
+  const warmth = anomalies(weather.tmax, replayYear);
+  const wet = wetness(weather.prcp, replayYear);
+  const frostWeek = weather.frostWeek[replayYear] ?? Infinity;
+  return warmth.map((_, t) => {
+    const sustained = trailingMean(warmth, t);
+    const rain = Math.min(WET_CLAMP.max, Math.max(WET_CLAMP.min, wet[t]));
+    const index = sustained > 0 ? sustained * (1 + WET_GAIN * rain) : sustained;
+    return t >= frostWeek ? index - FROST_SHIFT : index;
+  });
+}
+
 function checkedWeeks(year: number, weeks: readonly number[]): readonly number[] {
   if (weeks.length !== SEASON_WEEKS) {
     throw new RangeError(`${year} has ${weeks.length} weeks, expected ${SEASON_WEEKS}`);

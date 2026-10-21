@@ -31,9 +31,14 @@ import { weekLines } from './summary';
           </tr>
         </thead>
         <tbody>
-          @for (line of lines(); track line.week) {
+          @for (line of lines(); track line.week; let week = $index) {
             <tr class="border-b border-divider">
-              <th scope="row" class="p-2 font-normal">{{ line.week }}</th>
+              <th scope="row" class="p-2 font-normal">
+                {{ line.week }}
+                @if (week === frostWeek()) {
+                  <span class="ml-1 text-ink-muted">(first frost)</span>
+                }
+              </th>
               <td class="p-2 text-right tabular-nums">{{ line.demand }}</td>
               <td class="p-2 text-right tabular-nums">{{ line.normalOrdered }}</td>
               <td class="p-2 text-right tabular-nums">{{ line.normalCash }}</td>
@@ -49,6 +54,8 @@ import { weekLines } from './summary';
 export class CashTable {
   readonly result = input.required<SimResult>();
   readonly mondays = input.required<readonly string[]>();
+  /** Season week of the first fall frost, or null; marked in its row. */
+  readonly frostWeek = input<number | null>(null);
 
   protected readonly lines = computed(() => weekLines(this.result(), this.mondays()));
 }

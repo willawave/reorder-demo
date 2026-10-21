@@ -32,6 +32,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Unit-test coverage is enforced in CI: 80% for app code, and 95% lines and 90% branches for
   the model. `pnpm test:coverage` writes an HTML report to `coverage/`.
 
+### Changed
+
+- Weather model v2. The old model let the weather-adjusted plan lose in 13 of 16 real seasons.
+  The demo now follows the buying-desk rule:
+  - demand follows the last four weeks of warmth, boosted when it's also wet;
+  - the first fall frost cuts demand;
+  - sales lag the weather by a week.
+
+  The adjusted plan now does better in 12 of 16 seasons, and a test on all 16 guards that.
+
+- The weather data now includes daily lows and rain (`omaha-weather.json`).
+- The third preset is now 2022's early frost instead of 2024. The cash table marks the
+  first-frost week.
+
 ## [0.1.0.0] - 2026-10-21
 
 ### Added

@@ -26,9 +26,9 @@ describe('Simulator, ISSUE-001', () => {
     cost.dispatchEvent(new Event('input'));
     await fixture.whenStable();
 
-    const radio2024 = el.querySelector<HTMLInputElement>('input[value="2024"]')!;
-    radio2024.checked = true;
-    radio2024.dispatchEvent(new Event('change'));
+    const radio2022 = el.querySelector<HTMLInputElement>('input[value="2022"]')!;
+    radio2022.checked = true;
+    radio2022.dispatchEvent(new Event('change'));
     await fixture.whenStable();
 
     // The numbers are still 2012's, so the labels must still say 2012.
@@ -40,8 +40,8 @@ describe('Simulator, ISSUE-001', () => {
     cost.dispatchEvent(new Event('input'));
     await fixture.whenStable();
 
-    expect(text('#results-title')).toContain('2024');
-    expect(text('app-cash-table tbody tr th')).toBe('Mar 4');
+    expect(text('#results-title')).toContain('2022');
+    expect(text('app-cash-table tbody tr th')).toBe('Mar 7');
     expect(firstRow()).not.toBe(row2012);
   });
 });
