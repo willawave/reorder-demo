@@ -78,12 +78,35 @@ check(
   `${join(dist, 'server')} exists — outputMode is no longer "static"`,
 );
 
-// Prerendering can silently degrade to an empty shell. Assert real content.
-check(
-  'landing HTML carries the app content',
-  readFileSync(indexPath, 'utf8').includes('<h1'),
-  'no <h1> in the prerendered landing HTML — the app rendered an empty shell',
-);
+/*
+ * Prerendering can silently degrade to an empty shell, and the simulator is a
+ * lazy route, so a failed chunk load at prerender time would still build.
+ * Assert the parts of the page that matter reached the static HTML: the
+ * honesty label, the default season's computed tables, and the way to act.
+ */
+{
+  const html = readFileSync(indexPath, 'utf8');
+  const required = [
+    ['the headline', '<h1'],
+    ['the hypothetical-sales label', 'Sales are hypothetical'],
+    ['the comparison and cash tables', '<table'],
+    ['a computed result sentence', 'The weather-adjusted plan committed'],
+    ['the closing question', 'Would this change your order?'],
+    ['the booking link', 'href="https://cal.com/willawave/intro"'],
+    // Without the attribute every thumb sits at its midpoint until hydration.
+    ['slider values as attributes', /<input type="range"(?=[^>]*id="lead-time")(?=[^>]*value="2")/],
+  ];
+  const missing = required
+    .filter(([, needle]) =>
+      typeof needle === 'string' ? !html.includes(needle) : !needle.test(html),
+    )
+    .map(([name]) => name);
+  check(
+    'landing HTML carries the prerendered simulator',
+    missing.length === 0,
+    `missing from prerendered HTML: ${missing.join('; ')}`,
+  );
+}
 
 {
   const versionPath = join(browser, 'version.json');

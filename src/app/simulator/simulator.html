@@ -1,0 +1,149 @@
+<header class="border-b border-divider px-4 py-4">
+  <div class="mx-auto flex max-w-page items-center justify-between gap-4">
+    <p class="font-semibold tracking-tight">
+      <a class="inline-flex min-h-11 items-center" href="https://willawave.ai">WillaWave</a>
+      <span class="text-ink-muted"> · Reorder demo</span>
+    </p>
+  </div>
+</header>
+
+<main class="mx-auto flex max-w-page flex-col gap-10 px-4 py-10">
+  <section class="flex max-w-measure flex-col gap-4" aria-labelledby="page-title">
+    <h1 id="page-title" class="text-3xl font-semibold tracking-tight">
+      Would the weather have changed your flea and tick order?
+    </h1>
+    <p class="text-lg">
+      Replay a real Omaha season week by week. The normal plan orders to the usual seasonal curve.
+      The weather-adjusted plan scales that curve by how warm or cool the last two weeks ran. Move
+      the sliders to see when adjusting for weather pays off, and when it doesn't.
+    </p>
+    <p class="rounded-md border border-line bg-surface-raised p-3 text-sm">
+      <strong>Weather is real</strong> (NOAA daily highs, Omaha Eppley Airfield).
+      <strong>Sales are hypothetical:</strong> a made-up product with a typical flea and tick
+      season.
+    </p>
+  </section>
+
+  <app-season-picker [seasons]="seasons" [(selected)]="season" />
+
+  <section class="flex flex-col gap-6" aria-labelledby="controls-title">
+    <h2 id="controls-title" class="text-xl font-semibold">Your ordering setup</h2>
+    <div class="grid gap-6 sm:grid-cols-2">
+      <app-slider
+        controlId="lead-time"
+        label="Lead time"
+        [field]="form.leadTimeWeeks"
+        [min]="limits.leadTimeWeeks.min"
+        [max]="limits.leadTimeWeeks.max"
+        [step]="limits.leadTimeWeeks.step"
+        [format]="formatWeeks"
+        hint="Weeks from placing an order to having it on the shelf."
+      />
+      <app-slider
+        controlId="moq"
+        label="Minimum order"
+        [field]="form.moq"
+        [min]="limits.moq.min"
+        [max]="limits.moq.max"
+        [step]="limits.moq.step"
+        [format]="formatUnitsPlain"
+        hint="Any order is at least this many units. 0 means no minimum."
+      />
+      <app-slider
+        controlId="starting-inventory"
+        label="Stock on hand in March"
+        [field]="form.startingInventory"
+        [min]="limits.startingInventory.min"
+        [max]="limits.startingInventory.max"
+        [step]="limits.startingInventory.step"
+        [format]="formatUnitsPlain"
+      />
+      <div class="flex flex-col gap-1">
+        <label for="unit-cost" class="font-medium">Unit cost ($)</label>
+        <input
+          id="unit-cost"
+          type="number"
+          inputmode="decimal"
+          class="rounded-md border border-line bg-surface px-3"
+          required
+          [attr.min]="limits.unitCost.min"
+          [attr.max]="limits.unitCost.max"
+          [attr.value]="form.unitCost().value()"
+          [value]="form.unitCost().value()"
+          (input)="setUnitCost($event)"
+          [attr.aria-invalid]="form.unitCost().invalid()"
+          [attr.aria-describedby]="form.unitCost().invalid() ? 'unit-cost-error' : null"
+        />
+        @if (form.unitCost().invalid()) {
+          <p id="unit-cost-error" class="text-sm text-error">
+            {{ form.unitCost().errors()[0].message }} Showing the last valid result.
+          </p>
+        }
+      </div>
+      <app-slider
+        controlId="true-sensitivity"
+        label="How demand really responds to weather"
+        [field]="form.trueSensitivity"
+        [min]="limits.sensitivity.min"
+        [max]="limits.sensitivity.max"
+        [step]="limits.sensitivity.step"
+        [format]="sensitivityFormat"
+        hint="Change in weekly demand per standard deviation of temperature above normal. This generates the hypothetical sales."
+      />
+      <app-slider
+        controlId="assumed-sensitivity"
+        label="How the buyer thinks demand responds"
+        [field]="form.assumedSensitivity"
+        [min]="limits.sensitivity.min"
+        [max]="limits.sensitivity.max"
+        [step]="limits.sensitivity.step"
+        [format]="sensitivityFormat"
+        hint="What the weather-adjusted plan assumes. Set it to 0 and both plans order the same."
+      />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-6" aria-labelledby="results-title">
+    <h2 id="results-title" class="text-xl font-semibold">
+      {{ season().year }}: how the two plans did
+    </h2>
+    <app-plan-comparison [result]="result()" />
+    <app-cash-table [result]="result()" [mondays]="mondays()" />
+    <p class="text-sm text-ink-muted">
+      How it works: weekly demand is the curve × (1 + sensitivity × temperature anomaly), and both
+      plans order up to their forecast for the lead time plus one week.
+      <a
+        class="text-brand underline"
+        href="https://github.com/willawave/reorder-demo/blob/main/docs/model.md"
+        >Read the model</a
+      >.
+    </p>
+  </section>
+
+  <section
+    class="flex max-w-measure flex-col gap-4 rounded-lg bg-surface-raised p-6"
+    aria-labelledby="cta-title"
+  >
+    <h2 id="cta-title" class="text-2xl font-semibold">Would this change your order?</h2>
+    <p>
+      If your demand moves with the weather, I build decision tools like this one on your own sales
+      history.
+    </p>
+    <p>
+      <a
+        class="inline-flex min-h-11 items-center rounded-md bg-brand-fill px-5 font-semibold text-on-brand"
+        href="https://cal.com/willawave/intro"
+        >Book an intro call</a
+      >
+    </p>
+  </section>
+</main>
+
+<footer class="border-t border-divider px-4 py-8 text-sm text-ink-muted">
+  <div class="mx-auto flex max-w-page flex-wrap gap-x-6 gap-y-2">
+    <a class="inline-flex min-h-11 items-center" href="https://willawave.ai">willawave.ai</a>
+    <a class="inline-flex min-h-11 items-center" href="https://github.com/willawave/reorder-demo"
+      >Source on GitHub</a
+    >
+  </div>
+</footer>
