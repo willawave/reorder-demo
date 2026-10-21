@@ -10,6 +10,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The model behind the demo: the season calendar, leave-one-out weather normals and anomalies
   (`weather.ts`), and demand, the ordering policy and both reorder plans (`reorder.ts`). Table
   tests cover each, and `docs/model.md` explains the rules.
+- Real weather: weekly mean daily highs at Omaha Eppley Airfield for the 2010–2025 seasons,
+  from NOAA GHCN-Daily. `pnpm data:noaa` regenerates the file and refuses to write one with
+  a missing week.
 
 ## [0.1.0.0] - 2026-10-21
 

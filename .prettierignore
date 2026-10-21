@@ -7,3 +7,6 @@ test-results
 playwright-report
 .firebase
 .claude
+
+# Written by scripts/noaa-to-json.mjs, one line per year on purpose.
+src/app/data/*.json
