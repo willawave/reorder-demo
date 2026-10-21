@@ -3,7 +3,10 @@
 All notable changes to the reorder demo are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.0.0.0] - 2026-10-21
+
+The public launch: live at https://reorder-demo.willawave.ai with its own link-preview card,
+a public README and a client handoff guide.
 
 ### Added
 
