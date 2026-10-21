@@ -1,0 +1,81 @@
+/*
+ * Weather side of the model: the season calendar, leave-one-out normals and
+ * the standardised anomaly. Pure functions with no Angular imports, so the
+ * NOAA conversion script can share the season definition.
+ *
+ * Weeks are aligned across years by season-week index (0 to 34), not by ISO
+ * week number: the first season Monday is ISO week 9 in some years (2010,
+ * 2021) and week 10 in the rest, so ISO numbering would leave the ends of the
+ * season with fewer years behind their normal.
+ */
+
+/**
+ * The season is the ISO weeks whose Monday falls between Mar 1 and Oct 31.
+ * That span is 245 days, exactly 35 weeks, so every year has 35 season weeks.
+ */
+export const SEASON_WEEKS = 35;
+
+/** Weekly measures per season, keyed by year, 35 values each. */
+export type WeeklySeries = Readonly<Record<number, readonly number[]>>;
+
+export interface Normals {
+  readonly mean: readonly number[];
+  readonly sd: readonly number[];
+}
+
+const DAY_MS = 86_400_000;
+
+/** The 35 season Mondays of `year`, as `YYYY-MM-DD`. */
+export function seasonMondays(year: number): string[] {
+  const march1 = Date.UTC(year, 2, 1);
+  // getUTCDay is 0 for Sunday and 1 for Monday.
+  const daysToMonday = (8 - new Date(march1).getUTCDay()) % 7;
+  const first = march1 + daysToMonday * DAY_MS;
+  return Array.from({ length: SEASON_WEEKS }, (_, week) =>
+    new Date(first + week * 7 * DAY_MS).toISOString().slice(0, 10),
+  );
+}
+
+/**
+ * Per-week mean and sample standard deviation from every season except
+ * `replayYear`. Leaving the replayed season out keeps its own weather from
+ * leaking into the normal it is measured against.
+ */
+export function normals(series: WeeklySeries, replayYear: number): Normals {
+  const others = Object.entries(series)
+    .filter(([year]) => Number(year) !== replayYear)
+    .map(([year, weeks]) => checkedWeeks(Number(year), weeks));
+  if (others.length < 2) {
+    throw new RangeError(`normals need at least 2 other seasons, got ${others.length}`);
+  }
+
+  const mean: number[] = [];
+  const sd: number[] = [];
+  for (let week = 0; week < SEASON_WEEKS; week++) {
+    const values = others.map((weeks) => weeks[week]);
+    const m = values.reduce((sum, v) => sum + v, 0) / values.length;
+    const variance = values.reduce((sum, v) => sum + (v - m) ** 2, 0) / (values.length - 1);
+    mean.push(m);
+    sd.push(Math.sqrt(variance));
+  }
+  return { mean, sd };
+}
+
+/**
+ * Standardised anomaly of each week of `replayYear`: (measure − normal) ÷ SD.
+ * A week whose other seasons all agree has SD 0 and gets anomaly 0, never NaN.
+ */
+export function anomalies(series: WeeklySeries, replayYear: number): number[] {
+  const replay = series[replayYear];
+  if (!replay) throw new RangeError(`no weather for ${replayYear}`);
+  const weeks = checkedWeeks(replayYear, replay);
+  const { mean, sd } = normals(series, replayYear);
+  return weeks.map((value, week) => (sd[week] === 0 ? 0 : (value - mean[week]) / sd[week]));
+}
+
+function checkedWeeks(year: number, weeks: readonly number[]): readonly number[] {
+  if (weeks.length !== SEASON_WEEKS) {
+    throw new RangeError(`${year} has ${weeks.length} weeks, expected ${SEASON_WEEKS}`);
+  }
+  return weeks;
+}
