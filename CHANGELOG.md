@@ -5,6 +5,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.1.0] - 2026-11-03
+
 ### Fixed
 
 - When both plans place the same orders, the results sentence says so once, rather than
