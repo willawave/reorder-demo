@@ -18,37 +18,84 @@ const plan = (overrides: Partial<PlanResult> = {}): PlanResult => ({
  * breaks, or a tie reads as a difference; why_new=new page copy; seam=none
  */
 describe('comparisonSentence', () => {
-  const cases: [name: string, normal: PlanResult, adjusted: PlanResult, expected: string][] = [
+  // Weekly orders decide whether the plans match, so each case spells them.
+  const orders = (...ordered: number[]): PlanResult['weeks'] =>
+    ordered.map((units) => ({
+      arrived: 0,
+      demand: 0,
+      sold: 0,
+      short: 0,
+      ordered: units,
+      cash: 0,
+      onHandEnd: 0,
+    }));
+  const same = orders(40, 60);
+  const other = orders(40, 70);
+
+  const cases: [
+    name: string,
+    normal: PlanResult,
+    adjusted: PlanResult,
+    assumedSensitivity: number,
+    expected: string,
+  ][] = [
     [
-      'identical plans',
-      plan(),
-      plan(),
+      // 2012 at a 0% estimate: the case a visitor found confusing.
+      'the same orders at a 0% estimate, both short',
+      plan({ weeks: same, weeksShort: 6, unitsShort: 76 }),
+      plan({ weeks: same, weeksShort: 6, unitsShort: 76 }),
+      0,
+      "At a 0% buyer's estimate the weather-adjusted plan ignores the weather. Both plans placed the same orders, so each ran short in 6 weeks, losing 76 sales.",
+    ],
+    [
+      'the same orders at a 0% estimate, neither short',
+      plan({ weeks: same }),
+      plan({ weeks: same }),
+      0,
+      "At a 0% buyer's estimate the weather-adjusted plan ignores the weather. Both plans placed the same orders, and neither ran short.",
+    ],
+    [
+      // A nonzero estimate can still round to the same orders; no reason is claimed then.
+      'the same orders at a nonzero estimate',
+      plan({ weeks: same, weeksShort: 1, unitsShort: 1 }),
+      plan({ weeks: same, weeksShort: 1, unitsShort: 1 }),
+      0.1,
+      'Both plans placed the same orders, so each ran short in 1 week, losing 1 sale.',
+    ],
+    [
+      'different orders, neither short, equal totals',
+      plan({ weeks: same }),
+      plan({ weeks: other }),
+      0.3,
       'Neither plan ran short. The weather-adjusted plan committed the same cash and ended the season with the same stock left over.',
     ],
     [
       // The 2024 case: equal weeks, very different lost sales.
       'the same weeks short but different lost sales',
-      plan({ weeksShort: 1, unitsShort: 13 }),
-      plan({ weeksShort: 1, unitsShort: 2 }),
+      plan({ weeks: same, weeksShort: 1, unitsShort: 13 }),
+      plan({ weeks: other, weeksShort: 1, unitsShort: 2 }),
+      0.3,
       'The normal plan ran short in 1 week, losing 13 sales; the weather-adjusted plan ran short in 1 week, losing 2 sales. The weather-adjusted plan committed the same cash and ended the season with the same stock left over.',
     ],
     [
       'only the normal plan short, adjusted spends more and keeps more',
-      plan({ weeksShort: 7, unitsShort: 217, cashCommitted: 60_000, excessUnits: 10 }),
-      plan({ cashCommitted: 62_100, excessUnits: 11 }),
+      plan({ weeks: same, weeksShort: 7, unitsShort: 217, cashCommitted: 60_000, excessUnits: 10 }),
+      plan({ weeks: other, cashCommitted: 62_100, excessUnits: 11 }),
+      0.3,
       'The normal plan ran short in 7 weeks, losing 217 sales; the weather-adjusted plan never ran short. The weather-adjusted plan committed $2,100 more cash and ended the season with 1 unit more left over.',
     ],
     [
       'only the adjusted plan short, adjusted spends less and keeps less',
-      plan({ cashCommitted: 51_625, excessUnits: 7 }),
-      plan({ weeksShort: 1, unitsShort: 1, cashCommitted: 51_025, excessUnits: 4 }),
+      plan({ weeks: same, cashCommitted: 51_625, excessUnits: 7 }),
+      plan({ weeks: other, weeksShort: 1, unitsShort: 1, cashCommitted: 51_025, excessUnits: 4 }),
+      0.3,
       'The normal plan never ran short; the weather-adjusted plan ran short in 1 week, losing 1 sale. The weather-adjusted plan committed $600 less cash and ended the season with 3 units fewer left over.',
     ],
   ];
 
-  for (const [name, normal, adjusted, expected] of cases) {
+  for (const [name, normal, adjusted, assumedSensitivity, expected] of cases) {
     it(`should describe ${name}`, () => {
-      expect(comparisonSentence(normal, adjusted)).toBe(expected);
+      expect(comparisonSentence(normal, adjusted, assumedSensitivity)).toBe(expected);
     });
   }
 });

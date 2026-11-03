@@ -98,7 +98,9 @@ describe('Simulator', () => {
     await set('assumed-sensitivity', '0');
     expect(text('output[for="assumed-sensitivity"]')).toBe('0%');
     expect(cells(1)).toEqual(cells(0));
-    expect(text('app-plan-comparison p')).toContain('the same cash');
+    expect(text('app-plan-comparison p')).toContain(
+      "At a 0% buyer's estimate the weather-adjusted plan ignores the weather. Both plans placed the same orders",
+    );
   });
 
   it('should show a slider value in its output, formatted', async () => {

@@ -114,7 +114,10 @@
     <h2 id="results-title" class="text-xl font-semibold">
       {{ shown().season.year }}: how the two plans did
     </h2>
-    <app-plan-comparison [result]="shown().result" />
+    <app-plan-comparison
+      [result]="shown().result"
+      [assumedSensitivity]="shown().assumedSensitivity"
+    />
     <app-cash-table
       [result]="shown().result"
       [mondays]="shown().mondays"
