@@ -64,7 +64,13 @@ export class Simulator {
    */
   protected readonly shown = linkedSignal<
     { valid: boolean; settings: Settings; season: Season },
-    { season: Season; mondays: string[]; frostWeek: number | null; result: SimResult }
+    {
+      season: Season;
+      mondays: string[];
+      frostWeek: number | null;
+      assumedSensitivity: number;
+      result: SimResult;
+    }
   >({
     source: () => ({
       valid: this.form().valid(),
@@ -78,6 +84,7 @@ export class Simulator {
             season,
             mondays: seasonMondays(season.year),
             frostWeek: (weather.frostWeek as Record<number, number | null>)[season.year],
+            assumedSensitivity: settings.assumedSensitivity,
             result: simulate({
               ...settings,
               // Valid implies a number here; the form only lets null through as invalid.

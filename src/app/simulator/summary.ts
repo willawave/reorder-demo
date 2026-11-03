@@ -26,8 +26,34 @@ function count(n: number, noun: string): string {
   return `${formatUnits(n)} ${noun}${n === 1 ? '' : 's'}`;
 }
 
+/** Whether both plans placed the same order every week, which makes every total equal. */
+function sameOrders(normal: PlanResult, adjusted: PlanResult): boolean {
+  return (
+    normal.weeks.length === adjusted.weeks.length &&
+    normal.weeks.every((week, i) => week.ordered === adjusted.weeks[i].ordered)
+  );
+}
+
 /** Two plain sentences on how the weather-adjusted plan differed. */
-export function comparisonSentence(normal: PlanResult, adjusted: PlanResult): string {
+export function comparisonSentence(
+  normal: PlanResult,
+  adjusted: PlanResult,
+  assumedSensitivity: number,
+): string {
+  // Matching orders would read as "the same" five times over, so say it once,
+  // and at a 0% estimate say why.
+  if (sameOrders(normal, adjusted)) {
+    const reason =
+      assumedSensitivity === 0
+        ? "At a 0% buyer's estimate the weather-adjusted plan ignores the weather. "
+        : '';
+    const outcome =
+      normal.weeksShort === 0
+        ? 'and neither ran short'
+        : `so each ran short in ${count(normal.weeksShort, 'week')}, losing ${count(normal.unitsShort, 'sale')}`;
+    return `${reason}Both plans placed the same orders, ${outcome}.`;
+  }
+
   // Weeks alone can hide the story (1 week short each, but 13 lost sales
   // against 2), so each plan states both.
   const shortfall = (p: PlanResult) =>

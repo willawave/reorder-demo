@@ -115,7 +115,9 @@ test.describe('edge cases', () => {
       const [normal, adjusted] = await row.locator('td').allTextContents();
       expect(adjusted).toBe(normal);
     }
-    await expect(sentence(page)).toContainText('the same cash');
+    await expect(sentence(page)).toContainText(
+      "At a 0% buyer's estimate the weather-adjusted plan ignores the weather. Both plans placed the same orders",
+    );
   });
 
   for (const extreme of ['-0.5', '0.5']) {

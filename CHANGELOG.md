@@ -3,6 +3,14 @@
 All notable changes to the reorder demo are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- When both plans place the same orders, the results sentence says so once, rather than
+  comparing two equal plans. At a 0% buyer's estimate it also says why: the weather-adjusted
+  plan is ignoring the weather.
+
 ## [1.0.0.0] - 2026-10-21
 
 The public launch: live at https://reorder-demo.willawave.ai with its own link-preview card,

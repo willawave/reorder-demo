@@ -31,9 +31,11 @@ import { comparisonSentence, summaryRows } from './summary';
 })
 export class PlanComparison {
   readonly result = input.required<SimResult>();
+  /** The buyer's estimate the result was computed with. */
+  readonly assumedSensitivity = input.required<number>();
 
   protected readonly rows = computed(() => summaryRows(this.result()));
   protected readonly sentence = computed(() =>
-    comparisonSentence(this.result().normal, this.result().adjusted),
+    comparisonSentence(this.result().normal, this.result().adjusted, this.assumedSensitivity()),
   );
 }
